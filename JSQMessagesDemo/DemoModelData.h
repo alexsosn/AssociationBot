@@ -32,14 +32,14 @@ static NSString * const kJSQDemoAvatarDisplayNameSquires = @"Jesse Squires";
 static NSString * const kJSQDemoAvatarDisplayNameCook = @"Tim Cook";
 static NSString * const kJSQDemoAvatarDisplayNameJobs = @"Jobs";
 static NSString * const kJSQDemoAvatarDisplayNameWoz = @"Steve Wozniak";
-static NSString * const kJSQDemoAvatarDisplayName800 = @"Bot 800";
+static NSString * const kJSQDemoAvatarDisplayName700 = @"Bot 700";
 
 
 static NSString * const kJSQDemoAvatarIdSquires = @"053496-4509-289";
 static NSString * const kJSQDemoAvatarIdCook = @"468-768355-23123";
 static NSString * const kJSQDemoAvatarIdJobs = @"707-8956784-57";
 static NSString * const kJSQDemoAvatarIdWoz = @"309-41802-93823";
-static NSString * const kJSQDemoAvatarId800 = @"800-80000-80000";
+static NSString * const kJSQDemoAvatarId700 = @"700-70000-70000";
 
 
 

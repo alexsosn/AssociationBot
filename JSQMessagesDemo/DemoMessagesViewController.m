@@ -603,14 +603,21 @@
 
 - (void)collectionView:(JSQMessagesCollectionView *)collectionView didTapAvatarImageView:(UIImageView *)avatarImageView atIndexPath:(NSIndexPath *)indexPath
 {
+    JSQMessage *message = self.demoData.messages[indexPath.row];
+    self.inputToolbar.contentView.textView.text = message.text;
     NSLog(@"Tapped avatar!");
 }
 
 - (void)collectionView:(JSQMessagesCollectionView *)collectionView didTapMessageBubbleAtIndexPath:(NSIndexPath *)indexPath
 {
     JSQMessage *message = self.demoData.messages[indexPath.row];
-    self.inputToolbar.contentView.textView.text = message.text;
     NSLog(@"Tapped message bubble!");
+    
+    UIReferenceLibraryViewController *referenceLibraryViewController =
+    [[UIReferenceLibraryViewController alloc] initWithTerm:message.text];
+    [self presentViewController:referenceLibraryViewController
+                                 animated:YES
+                               completion:nil];
 }
 
 - (void)collectionView:(JSQMessagesCollectionView *)collectionView didTapCellAtIndexPath:(NSIndexPath *)indexPath touchLocation:(CGPoint)touchLocation

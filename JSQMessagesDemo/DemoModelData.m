@@ -30,6 +30,7 @@
 @interface DemoModelData()
 @property (nonatomic, strong) NSMutableSet *words;
 @property (nonatomic, strong) W2VDistance *distanceModel;
+@property (nonatomic, strong) AVSpeechSynthesizer *synthesizer;
 @end
 
 @implementation DemoModelData
@@ -52,6 +53,8 @@
             NSURL *url = [[NSBundle mainBundle] URLForResource:@"out" withExtension:@"bin"];
             [_distanceModel loadBinaryVectorFile:url error:&error];
         });
+        self.synthesizer = [AVSpeechSynthesizer new];
+
 
         /**
          *  Create avatar images once.
@@ -74,21 +77,21 @@
         
         JSQMessagesAvatarImage *wozImage = [JSQMessagesAvatarImageFactory avatarImageWithImage:[UIImage imageNamed:@"demo_avatar_woz"]
                                                                                       diameter:kJSQMessagesCollectionViewAvatarSizeDefault];
-        JSQMessagesAvatarImage *image800 = [JSQMessagesAvatarImageFactory avatarImageWithImage:[UIImage imageNamed:@"800"]
+        JSQMessagesAvatarImage *image700 = [JSQMessagesAvatarImageFactory avatarImageWithImage:[UIImage imageNamed:@"700"]
                                                                                       diameter:kJSQMessagesCollectionViewAvatarSizeDefault];
         
         self.avatars = @{ kJSQDemoAvatarIdSquires : jsqImage,
                           kJSQDemoAvatarIdCook : cookImage,
                           kJSQDemoAvatarIdJobs : jobsImage,
                           kJSQDemoAvatarIdWoz : wozImage,
-                          kJSQDemoAvatarId800 : image800};
+                          kJSQDemoAvatarId700 : image700};
         
         
         self.users = @{ kJSQDemoAvatarIdJobs : kJSQDemoAvatarDisplayNameJobs,
                         kJSQDemoAvatarIdCook : kJSQDemoAvatarDisplayNameCook,
                         kJSQDemoAvatarIdWoz : kJSQDemoAvatarDisplayNameWoz,
                         kJSQDemoAvatarIdSquires : kJSQDemoAvatarDisplayNameSquires,
-                        kJSQDemoAvatarId800: kJSQDemoAvatarDisplayName800};
+                        kJSQDemoAvatarId700: kJSQDemoAvatarDisplayName700};
         
         
         /**
@@ -114,13 +117,13 @@
      *  You should have a mutable array or orderedSet, or something.
      */
     self.messages = [[NSMutableArray alloc] initWithObjects:
-                     [[JSQMessage alloc] initWithSenderId:kJSQDemoAvatarId800
-                                        senderDisplayName:kJSQDemoAvatarDisplayName800
+                     [[JSQMessage alloc] initWithSenderId:kJSQDemoAvatarId700
+                                        senderDisplayName:kJSQDemoAvatarDisplayName700
                                                      date:[NSDate date]
                                                      text:@"Hi! I'm Association Bot. Let's play a game!"],
                      
-                     [[JSQMessage alloc] initWithSenderId:kJSQDemoAvatarId800
-                                        senderDisplayName:kJSQDemoAvatarDisplayName800
+                     [[JSQMessage alloc] initWithSenderId:kJSQDemoAvatarId700
+                                        senderDisplayName:kJSQDemoAvatarDisplayName700
                                                      date:[NSDate distantPast]
                                                      text:@"Give any English word and I'll find an association for it. You can also give me three words connected in some way and I'll try figure out the fourth one."],
                      nil];
@@ -243,17 +246,26 @@
         res = @"...";
     }
 
-    JSQMessage *message = [JSQMessage messageWithSenderId:kJSQDemoAvatarId800
-                                              displayName:kJSQDemoAvatarDisplayName800
-                                                     text:[res capitalizedString]];
-    [self.messages addObject:message];
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//    
+//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    
+        AVSpeechUtterance *utterance = [[AVSpeechUtterance alloc] initWithString:res];
+//        utterance.voice = [AVSpeechSynthesisVoice voiceWithIdentifier:@"en-US"];
+    
+    utterance.volume = 1;
+    AVSpeechSynthesisVoice *voice = [AVSpeechSynthesisVoice voiceWithLanguage:@"en-US"];
+    utterance.voice = voice;
+    
+        [self.synthesizer speakUtterance:utterance];
         
-            AVSpeechSynthesizer *synth = [AVSpeechSynthesizer new];
-            AVSpeechUtterance *utterance = [[AVSpeechUtterance alloc] initWithString:res];
-            [synth speakUtterance:utterance];
-        });
+//    });
+    
+    JSQMessage *message = [JSQMessage messageWithSenderId:kJSQDemoAvatarId700
+                                              displayName:kJSQDemoAvatarDisplayName700
+                                                     text:[res capitalizedString]];
+    
+    [self.messages addObject:message];
 }
 
 @end
