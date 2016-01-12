@@ -17,7 +17,6 @@
 //
 
 #import "DemoMessagesViewController.h"
-#import "AssociationBot-Swift.h"
 #import <DeepBelief/DeepBelief.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 
