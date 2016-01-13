@@ -235,8 +235,30 @@
         if ([self.words containsObject:key]) {
             [dict removeObjectForKey:key];
         } else {
-            res = key;
-            break;
+            
+            NSArray *tags1 = [word linguisticTagsInRange:NSMakeRange(0, [word length])
+                                        scheme:NSLinguisticTagSchemeLemma
+                                       options:NSLinguisticTaggerOmitPunctuation|NSLinguisticTaggerOmitWhitespace
+                                   orthography:nil
+                                   tokenRanges:nil];
+            
+            NSArray *tags2 = [key linguisticTagsInRange:NSMakeRange(0, [key length])
+                                                        scheme:NSLinguisticTagSchemeLemma
+                                                       options:NSLinguisticTaggerOmitPunctuation|NSLinguisticTaggerOmitWhitespace
+                                                   orthography:nil
+                                                   tokenRanges:nil];
+            
+            NSString *inputWordLemma = [tags1 firstObject];
+            NSString *closestWordLemma = [tags2 firstObject];
+            
+            if ([inputWordLemma isEqualToString:closestWordLemma]
+                && [inputWordLemma length] > 0) {
+                [dict removeObjectForKey:key];
+
+            } else {
+                res = key;
+                break;
+            }
         }
     }
     
@@ -246,20 +268,15 @@
         res = @"...";
     }
 
-    
-//    
-//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-    
         AVSpeechUtterance *utterance = [[AVSpeechUtterance alloc] initWithString:res];
-//        utterance.voice = [AVSpeechSynthesisVoice voiceWithIdentifier:@"en-US"];
+        utterance.voice = [AVSpeechSynthesisVoice voiceWithIdentifier:@"en-US"];
     
-    utterance.volume = 1;
-    AVSpeechSynthesisVoice *voice = [AVSpeechSynthesisVoice voiceWithLanguage:@"en-US"];
-    utterance.voice = voice;
+//    utterance.volume = 1;
+//    AVSpeechSynthesisVoice *voice = [AVSpeechSynthesisVoice voiceWithLanguage:@"en-US"];
+//    utterance.voice = voice;
     
         [self.synthesizer speakUtterance:utterance];
         
-//    });
     
     JSQMessage *message = [JSQMessage messageWithSenderId:kJSQDemoAvatarId700
                                               displayName:kJSQDemoAvatarDisplayName700

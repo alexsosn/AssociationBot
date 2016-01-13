@@ -471,11 +471,15 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
             prediction = [NSString stringWithFormat: @"%s", label];
         }
         
-        JSQMessage *message = [JSQMessage messageWithSenderId:kJSQDemoAvatarId700 displayName:kJSQDemoAvatarDisplayName700 text:prediction];
+        JSQMessage *message = [JSQMessage messageWithSenderId:kJSQDemoAvatarIdSquires displayName:kJSQDemoAvatarDisplayNameSquires text:prediction];
         
         [self.demoData.messages addObject:message];
-        [self finishSendingMessage];
+//        [self finishSendingMessage];
         [self finishSendingMessageAnimated:YES];
+        
+        [self.demoData associationForWord:[[prediction componentsSeparatedByString:@" "] lastObject]];
+        [self finishSendingMessageAnimated:YES];
+
     }];
 }
 
