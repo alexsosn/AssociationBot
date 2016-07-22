@@ -19,6 +19,8 @@
 #import "DemoMessagesViewController.h"
 #import <DeepBelief/DeepBelief.h>
 #import <MobileCoreServices/MobileCoreServices.h>
+#import <CoreGraphics/CoreGraphics.h>
+#import "UIImage+FaceDetection.h"
 
 @interface DemoMessagesViewController()  <UIImagePickerControllerDelegate, UINavigationControllerDelegate,UIPopoverControllerDelegate>
 @property (nonatomic) void* network;
@@ -424,22 +426,52 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
         if (!image) {
             image = info[UIImagePickerControllerOriginalImage];
         }
-        
-        image = [self generateThumbnailFromImage:image];
-        
-        NSString *documentsDirectory = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-        NSString *destPath = [NSString stringWithFormat:@"%@/%@.jpg", documentsDirectory, @([image hash])];
-        
-        NSData *imageData = UIImageJPEGRepresentation(image, 0.5);
-        if(imageData) {
-            NSError *error = nil;
-            BOOL success = [imageData writeToFile:destPath options:NSDataWritingAtomic error:&error];
-            if(NO == success) {
-                NSLog(@"couldn't write image data to file %@ because of error %@", destPath, error);
-            }
+        [self processImage:image];
+        }];
+}
+
+- (void)processImage:(UIImage *)image {
+    image = [self generateThumbnailFromImage:image];
+    
+    NSString *documentsDirectory = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *destPath = [NSString stringWithFormat:@"%@/%@.jpg", documentsDirectory, @([image hash])];
+    
+    NSData *imageData = UIImageJPEGRepresentation(image, 0.5);
+    if(imageData) {
+        NSError *error = nil;
+        BOOL success = [imageData writeToFile:destPath options:NSDataWritingAtomic error:&error];
+        if(NO == success) {
+            NSLog(@"couldn't write image data to file %@ because of error %@", destPath, error);
         }
+    }
+    
+    UIImage *compressedImage = [UIImage imageWithContentsOfFile:destPath];
+    NSDictionary *dict = [compressedImage croppedAroundLargestFaceWithAccuracy:CIDetectorAccuracyHigh];
+    UIImage *faceImage = dict[@"face"];
+    BOOL isSmiling = dict[@"isSmiling"];
+    
+    if (faceImage != nil) { // check if face present on image
         
-        UIImage *compressedImage = [UIImage imageWithContentsOfFile:destPath];
+        JSQPhotoMediaItem *photoItem = [[JSQPhotoMediaItem alloc] initWithImage:faceImage];
+        JSQMessage *photoMessage = [JSQMessage messageWithSenderId:kJSQDemoAvatarIdSquires
+                                                       displayName:kJSQDemoAvatarDisplayNameSquires
+                                                             media:photoItem];
+        [self.demoData.messages addObject:photoMessage];
+        
+        [self finishSendingMessage];
+
+        if (isSmiling) {
+            // UIImage * emoImage = [self emotionImageFor:faceImage];
+            UIImage * emoImage = [UIImage imageNamed:@"smile-1.jpg"];
+            
+            JSQPhotoMediaItem *emoItem = [[JSQPhotoMediaItem alloc] initWithImage:emoImage];
+            JSQMessage *emoMessage = [JSQMessage messageWithSenderId:kJSQDemoAvatarId700 displayName:kJSQDemoAvatarDisplayName700
+                                                               media:emoItem];
+            [self.demoData.messages addObject:emoMessage];
+            
+            [self finishSendingMessageAnimated:YES];
+        }
+    } else  {
         
         JSQPhotoMediaItem *photoItem = [[JSQPhotoMediaItem alloc] initWithImage:compressedImage];
         JSQMessage *photoMessage = [JSQMessage messageWithSenderId:kJSQDemoAvatarIdSquires
@@ -474,14 +506,32 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
         JSQMessage *message = [JSQMessage messageWithSenderId:kJSQDemoAvatarIdSquires displayName:kJSQDemoAvatarDisplayNameSquires text:prediction];
         
         [self.demoData.messages addObject:message];
-//        [self finishSendingMessage];
+        //        [self finishSendingMessage];
         [self finishSendingMessageAnimated:YES];
         
         [self.demoData associationForWord:[[prediction componentsSeparatedByString:@" "] lastObject]];
         [self finishSendingMessageAnimated:YES];
-
-    }];
+    }
 }
+
+//- (UIImage *)getFaceImage:(UIImage *)picture {
+//    CIDetector  *detector = [CIDetector detectorOfType:CIDetectorTypeFace
+//                                               context:nil
+//                                               options:[NSDictionary dictionaryWithObject: CIDetectorAccuracyHigh forKey: CIDetectorAccuracy]];
+//    
+//    CIImage *ciImage = [CIImage imageWithCGImage: [picture CGImage]];
+//    NSArray *features = [detector featuresInImage:ciImage];
+//    if (features.count == 0) {
+//        return nil;
+//    }
+//
+//    CIFaceFeature *faceFeature = [features objectAtIndex:0];
+//    CIContext *context = [ciImage context]
+//    CGImageRef cgImage = [_ciContext createCGImage:[CIImage imageWithCGImage:picture.CGImage] fromRect:faceFeature.bounds];
+//    UIImage *croppedFace = [UIImage imageWithCGImage:cgImage];
+//    
+//    return croppedFace;
+//}
 
 - (UIImage *)generateThumbnailFromImage:(UIImage*)mainImage {
     UIImage * thumbnail;
